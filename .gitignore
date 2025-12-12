@@ -2,5 +2,54 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/.vs
-/TechMailGuard.API/obj
+# Build results
+bin/
+obj/
+
+# User-specific files
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio
+.vs/
+*.vcxproj.user
+
+# Logs
+*.log
+
+# NuGet
+*.nupkg
+.nuget/
+packages/
+project.lock.json
+project.fragment.lock.json
+
+# ASP.NET / Blazor / Web
+wwwroot/node_modules/
+node_modules/
+dist/
+temp/
+*.cache
+*.db
+
+# Static Web Assets
+**/staticwebassets.dev.json
+**/staticwebassets.build.json
+
+# Azure / Publish profiles
+*.pubxml
+*.publishproj
+
+# Dotnet tools
+.dotnet/
+
+# Rider / JetBrains
+.idea/
+
+# OS generated files
+Thumbs.db
+.DS_Store
+

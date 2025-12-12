@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-TechMailGuard.Worker-7c42a7f7-70df-4edf-9133-ee09af7ba01d</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TechMailGuard.Domain\TechMailGuard.Domain.csproj" />
+    <ProjectReference Include="..\TechMailGuard.Infrastructure\TechMailGuard.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>
