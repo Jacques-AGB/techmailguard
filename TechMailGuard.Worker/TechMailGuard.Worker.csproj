@@ -14,5 +14,6 @@
   <ItemGroup>
     <ProjectReference Include="..\TechMailGuard.Domain\TechMailGuard.Domain.csproj" />
     <ProjectReference Include="..\TechMailGuard.Infrastructure\TechMailGuard.Infrastructure.csproj" />
+    <ProjectReference Include="..\TechMailGuard.Application\TechMailGuard.Application.csproj" />
   </ItemGroup>
 </Project>

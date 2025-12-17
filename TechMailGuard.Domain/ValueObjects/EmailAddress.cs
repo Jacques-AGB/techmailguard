@@ -7,14 +7,14 @@ public readonly record struct EmailAddress
         @"^[^@\s]+@[^@\s]+\.[^@\s]+$",
         RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
-    private string value { get; init; }
+    public string Value { get; init; }
 
     private EmailAddress(string value) 
     {
-        value = value.ToLowerInvariant();
+        this.Value = value.ToLowerInvariant();
     }
 
-    private static EmailAddress Create(string value) 
+    public static EmailAddress Create(string value) 
     {
         if (string.IsNullOrWhiteSpace(value))
             throw new ArgumentException("Email address cannot be null or empty.", nameof(value));
