@@ -3,9 +3,9 @@
 namespace TechMailGuard.Domain.Interfaces;
 public interface IMailboxRepository
 {
-    Task<IMailboxRepository?> GetByUserIdAdSynchronizationContext(Guid userId);
-    void Add(Mailbox mailbox);
+    Task<Mailbox?> GetByUserIdAsync(Guid userId, CancellationToken ct = default);
+    Task AddAsync(Mailbox mailbox, CancellationToken ct = default);
 
-    Task<int> SaveChangesAsync();
+    void Update(Mailbox mailbox);
 
 }

@@ -6,6 +6,10 @@
 bin/
 obj/
 
+# json secrets
+**/appsettings.json
+**/appsettings.Development.json
+
 # User-specific files
 *.user
 *.rsuser

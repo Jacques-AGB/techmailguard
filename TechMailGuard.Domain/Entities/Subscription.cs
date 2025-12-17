@@ -1,5 +1,4 @@
-﻿using TechMailGuard.Domain.Aggregates;
-using TechMailGuard.Domain.Enum;
+﻿using TechMailGuard.Domain.Enum;
 using TechMailGuard.Domain.Events;
 using TechMailGuard.Domain.ValueObjects;
 
@@ -36,7 +35,7 @@ public class Subscription : EntityBase
         }
         else
         {
-             throw new InvalidOperationException("Only active subscriptions can be marked as pending unsubscribe.");
+            throw new InvalidOperationException("Only active subscriptions can be marked as pending unsubscribe.");
         }
 
     }
