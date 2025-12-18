@@ -75,4 +75,14 @@ public class Subscription : EntityBase
         }
 
     }
+
+
+    public void RequestUnsubscribe()
+    {
+        if (Status == SubscriptionStatus.Unsubscribed) return;
+
+        Status = SubscriptionStatus.PendingUnsubscribe;
+
+        // On pourrait ajouter un événement ici si on veut que le robot se réveille
+    }
 }

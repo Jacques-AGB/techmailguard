@@ -1,5 +1,7 @@
-﻿namespace TechMailGuard.Domain.Events;
-public interface IDomainEvent
+﻿using MediatR;
+
+namespace TechMailGuard.Domain.Events;
+public interface IDomainEvent : INotification
 {
     DateTime OccurredOn { get; }
 }

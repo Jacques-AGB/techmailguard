@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TechMailGuard.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using TechMailGuard.Infrastructure.Persistence;
 namespace TechMailGuard.Infrastructure.Migrations
 {
     [DbContext(typeof(TechMailGuardDbContext))]
-    partial class TechMailGuardDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251217143821_UpdateMailboxWithProviderAndUser")]
+    partial class UpdateMailboxWithProviderAndUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

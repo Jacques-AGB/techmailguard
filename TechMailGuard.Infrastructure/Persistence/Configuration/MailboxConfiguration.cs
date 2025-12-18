@@ -12,16 +12,24 @@ public class MailboxConfiguration : IEntityTypeConfiguration<Mailbox>
         builder.ToTable("Mailboxes");
         builder.HasKey(m => m.Id);
 
+        builder.Property(m => m.UserId)
+            .IsRequired();
+
+        builder.Property(m => m.Provider)
+            .HasMaxLength(50) 
+            .IsRequired();
+
         builder.Property(m => m.EmailAddress)
             .HasConversion(
-                email => email.Value,             
-                value => EmailAddress.Create(value) 
+                email => email.Value,
+                value => EmailAddress.Create(value)
             )
             .HasColumnName("Email")
             .IsRequired();
 
         builder.HasMany(m => m.Subscriptions)
             .WithOne()
-            .HasForeignKey("MailboxId");
+            .HasForeignKey("MailboxId")
+            .OnDelete(DeleteBehavior.Cascade); 
     }
 }

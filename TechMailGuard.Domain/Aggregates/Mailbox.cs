@@ -5,23 +5,26 @@ using TechMailGuard.Domain.ValueObjects;
 namespace TechMailGuard.Domain.Aggregates;
 public class Mailbox : EntityBase
 {
-
+    public Guid UserId { get; private set; }
+    public string Provider { get; private set; }
     public EmailAddress EmailAddress { get; private set; }
     private readonly List<Subscription> _subscriptions = new List<Subscription>();
     public IReadOnlyCollection<Subscription> Subscriptions => _subscriptions.AsReadOnly();
 
     private Mailbox() { }
 
-    private Mailbox(Guid userId, EmailAddress userEmail)
+    private Mailbox(Guid userId, EmailAddress userEmail, string provider)
     {
         Id = userId;
-        EmailAddress =  userEmail;
+        UserId = userId;
+        EmailAddress = userEmail;
+        Provider = provider;
     }
 
 
-    public static Mailbox Create(Guid userId, EmailAddress userEmail)
+    public static Mailbox Create(Guid userId, EmailAddress userEmail, string provider)
     {
-        return new Mailbox(userId, userEmail);
+        return new Mailbox(userId, userEmail,provider);
     }
 
     public Subscription AddSubscrition ( EmailAddress senderEmail, string NewsletterName )
