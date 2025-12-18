@@ -1,6 +1,13 @@
 @TechMailGuard.API_HostAddress = http://localhost:5097
 
-GET {{TechMailGuard.API_HostAddress}}/weatherforecast/
-Accept: application/json
+### create mailbox
+POST {{TechMailGuard.API_HostAddress}}/api/mailbox
+Content-Type: application/json
 
-###
+{
+  "email": "test@techmailguard.com",
+  "provider": "Gmail"
+}
+
+### get all mailbox 
+GET {{TechMailGuard.API_HostAddress}}/api/mailbox

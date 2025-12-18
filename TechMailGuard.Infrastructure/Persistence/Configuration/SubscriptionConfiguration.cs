@@ -11,7 +11,9 @@ public class SubscriptionConfiguration : IEntityTypeConfiguration<Subscription>
         builder.ToTable("Subscriptions");
         builder.HasKey(s => s.Id);
 
-       
+        builder.Property(s => s.Id)
+            .ValueGeneratedNever();
+
         builder.Property(s => s.SenderEmail)
             .HasConversion(
                 email => email.Value,

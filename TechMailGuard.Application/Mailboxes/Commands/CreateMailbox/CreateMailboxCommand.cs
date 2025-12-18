@@ -22,10 +22,15 @@ public class CreateMailboxCommandHandler : IRequestHandler<CreateMailboxCommand,
     {
         var emailVo = EmailAddress.Create(request.Email);
 
-        var mailbox = Mailbox.Create(Guid.NewGuid(), emailVo); //userId will be added later when we will have users management
+        var tempUserId = Guid.NewGuid();
+
+        var mailbox = Mailbox.Create(
+            tempUserId,
+            emailVo,
+            request.Provider 
+        );
 
         await _repository.AddAsync(mailbox, cancellationToken);
-
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return mailbox.Id;

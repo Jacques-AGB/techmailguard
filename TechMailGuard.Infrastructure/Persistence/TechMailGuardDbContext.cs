@@ -1,13 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TechMailGuard.Domain.Aggregates;
+using TechMailGuard.Domain.Entities;
 using TechMailGuard.Domain.Interfaces;
 
 namespace TechMailGuard.Infrastructure.Persistence;
 public class TechMailGuardDbContext : DbContext, IUnitOfWork
 {
-
-    public TechMailGuardDbContext(DbContextOptions<TechMailGuardDbContext> options) : base(options)
+    private readonly IPublisher _publisher;
+    public TechMailGuardDbContext(DbContextOptions<TechMailGuardDbContext> options, IPublisher publisher) : base(options)
     {
+        _publisher = publisher;
     }
 
     public DbSet<Mailbox> Mailboxes => Set<Mailbox>();
@@ -15,7 +18,26 @@ public class TechMailGuardDbContext : DbContext, IUnitOfWork
 
     public override async Task<int> SaveChangesAsync(CancellationToken ct = default)
     {
-        return await base.SaveChangesAsync(ct);
+        var domainEntities = ChangeTracker.Entries<EntityBase>()
+            .Where(x => x.Entity.DomainEvents != null && x.Entity.DomainEvents.Any())
+            .Select(x => x.Entity)
+            .ToList();
+
+        var domainEvents = domainEntities
+            .SelectMany(x => x.DomainEvents)
+            .ToList();
+
+        domainEntities.ForEach(entity => entity.ClearDomainEvents());
+
+
+        var result = await base.SaveChangesAsync(ct);
+
+        foreach (var domainEvent in domainEvents)
+        {
+            await _publisher.Publish(domainEvent, ct);
+        }
+
+        return result;
     }
 
 
