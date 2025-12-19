@@ -84,13 +84,15 @@ Automatise la surveillance et la collecte des sources d'informations.
 
 📝 Roadmap
 
-[x] Phase 1 : Modélisation du Domaine (Entités, Agrégats, Events)
+[x] : Modélisation du Domaine (Entités, Agrégats, Events)
 
-[ ] Phase 2 : Couche Application (Commands/Queries avec MediatR)
+[ ]  : Couche Application (Commands/Queries avec MediatR) Cette phase est à compléter pour enregistrer des abonnement dans la db et faire aussi d'autres traitements
 
-[ ] Phase 3 : Infrastructure (Persistence EF Core & Messagerie RabbitMQ)
+[x]  : Infrastructure (Persistence EF Core )
 
-[ ] Phase 4 : Interface Web (Composants Blazor)
+[x]  : Interface Web (Composants Blazor)
+
+[x]  : Intégration de gmail et de gemini
 
 🤝 Contribution
 Les contributions sont les bienvenues ! Consultez le fichier CONTRIBUTING.md pour plus de détails.
