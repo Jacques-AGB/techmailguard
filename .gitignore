@@ -57,3 +57,4 @@ temp/
 Thumbs.db
 .DS_Store
 
+/TechMailGuard.Infrastructure/client_secret.json

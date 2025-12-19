@@ -41,7 +41,6 @@ public class EmailUnsubscribeService : IEmailUnsubscribeService
 
     public async Task<bool> UnsubscribeFromHeaderAsync(string unsubscribeHeaderValue, CancellationToken ct)
     {
-        // Extrait l'URL entre < > (Format standard du header List-Unsubscribe)
         var match = Regex.Match(unsubscribeHeaderValue, @"<(https?://[^>]+)>");
 
         if (match.Success)
