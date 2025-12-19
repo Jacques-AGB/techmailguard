@@ -1,0 +1,120 @@
+﻿@page "/Newsletter"
+@inherits NewsletterDashboardBase
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold">📬 Mes Newsletters</h3>
+        <button class="btn btn-orange shadow-sm" @onclick="LoadData" disabled="@IsLoading">
+            @if (IsLoading)
+            {
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <span> Analyse en cours...</span>
+            }
+            else
+            {
+                <span>🔄 Actualiser la liste</span>
+            }
+        </button>
+    </div>
+
+    @if (IsLoading)
+    {
+        <div class="my-5 text-center">
+            <p class="mb-3 text-muted">Scan intelligent de votre boîte Gmail...</p>
+            <div class="progress rounded-pill" style="height: 12px; max-width: 600px; margin: 0 auto;">
+                <div class="progress-bar bg-orange progress-bar-striped progress-bar-animated"
+                     role="progressbar" style="width: 100%"></div>
+            </div>
+        </div>
+    }
+    else if (Newsletters == null)
+    {
+        <div class="alert alert-custom-warning shadow-sm border-0">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            L'API est injoignable sur le port 7119. Vérifiez que le projet Backend est lancé.
+        </div>
+    }
+    else if (!Newsletters.Any())
+    {
+        <div class="alert alert-info shadow-sm border-0">
+            🔎 Aucune newsletter détectée dans vos derniers messages.
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var item in Newsletters)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 border-0 shadow-sm shadow-hover">
+                        <div class="card-header bg-white border-0 pt-3">
+                            <span class="badge bg-orange-light text-orange mb-2">Newsletter</span>
+                            <h5 class="card-title fw-bold text-dark mb-0">@item.SenderName</h5>
+                            <small class="text-muted">@item.SenderEmail</small>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text text-secondary">@item.Subject</p>
+                        </div>
+                        <div class="card-footer bg-white border-0 pb-3">
+
+                                <a href="@item.UnsubscribeUrl" target="_blank"
+                                   class="btn btn-outline-danger btn-sm border-0">
+                                    <i class="bi bi-trash3 me-1"></i> Se désinscrire
+                                </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    :root {
+        --kt-orange: #FF6600;
+        --kt-orange-light: rgba(255, 102, 0, 0.1);
+    }
+
+    .btn-orange {
+        background-color: var(--kt-orange);
+        color: white;
+        border: none;
+    }
+
+        .btn-orange:hover {
+            background-color: #e65c00;
+            color: white;
+        }
+
+    .bg-orange {
+        background-color: var(--kt-orange) !important;
+    }
+
+    .text-orange {
+        color: var(--kt-orange) !important;
+    }
+
+    .bg-orange-light {
+        background-color: var(--kt-orange-light) !important;
+    }
+
+    .alert-custom-warning {
+        background-color: #fff3cd;
+        color: #856404;
+        border-left: 4px solid #ffc107;
+    }
+
+    .shadow-hover {
+        transition: all 0.3s ease;
+    }
+
+        .shadow-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 1rem 2rem rgba(255, 102, 0, 0.15) !important;
+        }
+
+    .card {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+</style>

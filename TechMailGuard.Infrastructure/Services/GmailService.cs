@@ -2,17 +2,18 @@
 using Google.Apis.Gmail.v1.Data;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
-using TechMailGuard.Domain.Interfaces;
 using System.Text;
+using System.Text.RegularExpressions;
+using TechMailGuard.Application.Dtos;
+using TechMailGuard.Domain.Interfaces;
 
-// Alias pour éviter la confusion entre ta classe GmailService et celle de Google
+
 using GoogleApi = Google.Apis.Gmail.v1;
 
 namespace TechMailGuard.Infrastructure.Services;
 
 public class GmailService : IGmailService
 {
-    // Scopes nécessaires : lecture seule et modification (pour marquer comme lu ou supprimer si besoin)
     private readonly string[] Scopes = {
         GoogleApi.GmailService.Scope.GmailReadonly,
         GoogleApi.GmailService.Scope.GmailModify
@@ -20,24 +21,86 @@ public class GmailService : IGmailService
 
     private const string ApplicationName = "TechMailGuard";
 
+
+
+    public async Task<List<NewsletterDto>> GetLatestNewslettersAsync(CancellationToken ct)
+    {
+        var result = new List<NewsletterDto>();
+        var service = await GetGmailServiceInstanceAsync(ct);
+
+        var listRequest = service.Users.Messages.List("me");
+        listRequest.MaxResults = 30;
+        var listResponse = await listRequest.ExecuteAsync(ct);
+
+        if (listResponse.Messages == null) return result;
+
+        foreach (var msgSummary in listResponse.Messages)
+        {
+
+            var msg = await service.Users.Messages.Get("me", msgSummary.Id).ExecuteAsync(ct);
+
+            var headers = msg.Payload.Headers;
+            var unsubscribeHeader = headers.FirstOrDefault(h => h.Name == "List-Unsubscribe")?.Value;
+
+
+            if (!string.IsNullOrEmpty(unsubscribeHeader))
+            {
+                var from = headers.FirstOrDefault(h => h.Name == "From")?.Value ?? "Inconnu";
+                var subject = headers.FirstOrDefault(h => h.Name == "Subject")?.Value ?? "Sans sujet";
+
+
+                var match = Regex.Match(from, @"(.*)<(.*)>");
+                string name = match.Success ? match.Groups[1].Value.Trim() : from;
+                string email = match.Success ? match.Groups[2].Value.Trim() : from;
+
+                result.Add(new NewsletterDto
+                {
+                    MessageId = msg.Id,
+                    SenderName = name.Replace("\"", ""),
+                    SenderEmail = email,
+                    Body = ExtractBody(msg),
+                    Subject = subject,
+                    ReceivedAt = DateTimeOffset.FromUnixTimeMilliseconds(msg.InternalDate ?? 0).DateTime,
+                    HasUnsubscribeHeader = true,
+                    UnsubscribeUrl = ExtractUrl(unsubscribeHeader)
+                });
+            }
+        }
+        return result;
+    }
+
+
+
     public async Task<string?> GetLatestEmailHtmlAsync(string senderEmail, CancellationToken ct)
     {
-        UserCredential credential;
+        var service = await GetGmailServiceInstanceAsync(ct);
 
-        // On définit le chemin vers le fichier secret dans le répertoire d'exécution (bin)
+        var listRequest = service.Users.Messages.List("me");
+        listRequest.Q = $"from:{senderEmail}";
+        listRequest.MaxResults = 1;
+
+        var listResponse = await listRequest.ExecuteAsync(ct);
+        var messageInfo = listResponse.Messages?.FirstOrDefault();
+
+        if (messageInfo == null) return null;
+
+        var message = await service.Users.Messages.Get("me", messageInfo.Id).ExecuteAsync(ct);
+        return ExtractHtmlFromBody(message);
+    }
+
+
+
+    private async Task<GoogleApi.GmailService> GetGmailServiceInstanceAsync(CancellationToken ct)
+    {
         string jsonPath = Path.Combine(AppContext.BaseDirectory, "client_secret.json");
 
         if (!File.Exists(jsonPath))
-        {
-            throw new FileNotFoundException($"Le fichier d'identifiants est introuvable. Assure-toi qu'il est bien copié dans le répertoire de sortie (Propriétés -> Copier si plus récent). Chemin tenté : {jsonPath}");
-        }
+            throw new FileNotFoundException($"Fichier client_secret.json introuvable à : {jsonPath}");
 
-        // 1. Authentification OAuth2
+        UserCredential credential;
         using (var stream = new FileStream(jsonPath, FileMode.Open, FileAccess.Read))
         {
-            // Le token sera stocké localement pour ne pas demander la connexion à chaque fois
             string credPath = Path.Combine(AppContext.BaseDirectory, "token.json");
-
             credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
                 GoogleClientSecrets.FromStream(stream).Secrets,
                 Scopes,
@@ -46,51 +109,24 @@ public class GmailService : IGmailService
                 new FileDataStore(credPath, true));
         }
 
-        // 2. Création du service client Google
-        var service = new GoogleApi.GmailService(new BaseClientService.Initializer()
+        return new GoogleApi.GmailService(new BaseClientService.Initializer()
         {
             HttpClientInitializer = credential,
             ApplicationName = ApplicationName,
         });
-
-        // 3. Recherche du dernier message de l'expéditeur spécifique
-        var listRequest = service.Users.Messages.List("me");
-        listRequest.Q = $"from:{senderEmail}";
-        listRequest.MaxResults = 1;
-
-        var listResponse = await listRequest.ExecuteAsync(ct);
-        var messageInfo = listResponse.Messages?.FirstOrDefault();
-
-        if (messageInfo == null)
-        {
-            Console.WriteLine($"[GMAIL] Aucun message trouvé pour {senderEmail}");
-            return null;
-        }
-
-        // 4. Récupération du contenu complet du message (Payload)
-        var message = await service.Users.Messages.Get("me", messageInfo.Id).ExecuteAsync(ct);
-
-        // 5. Extraction et décodage du HTML
-        return ExtractHtmlFromBody(message);
     }
 
-    private string? ExtractHtmlFromBody(Message message)
-    {
-        return FindHtmlPart(message.Payload);
-    }
+    private string? ExtractHtmlFromBody(Message message) => FindHtmlPart(message.Payload);
 
     private string? FindHtmlPart(MessagePart part)
     {
-        // Si la partie actuelle est du HTML
         if (part.MimeType == "text/html" && part.Body?.Data != null)
         {
-            // Décodage du format Base64Url spécifique à Google
             string base64Data = part.Body.Data.Replace('-', '+').Replace('_', '/');
             byte[] data = Convert.FromBase64String(base64Data);
             return Encoding.UTF8.GetString(data);
         }
 
-        // Si le mail est "Multipart" (contient plusieurs parties), on cherche récursivement
         if (part.Parts != null)
         {
             foreach (var subPart in part.Parts)
@@ -99,7 +135,39 @@ public class GmailService : IGmailService
                 if (result != null) return result;
             }
         }
-
         return null;
     }
+
+    private string? ExtractUrl(string headerValue)
+    {
+        var match = Regex.Match(headerValue, @"<(https?://[^>]+)>");
+        return match.Success ? match.Groups[1].Value : null;
+    }
+    private string ExtractBody(Message msg)
+    {
+        string body = "";
+
+        if (msg.Payload.Parts != null && msg.Payload.Parts.Count > 0)
+        {
+
+            var part = msg.Payload.Parts.FirstOrDefault(p => p.MimeType == "text/plain")
+                       ?? msg.Payload.Parts.FirstOrDefault(p => p.MimeType == "text/html");
+
+            if (part?.Body?.Data != null)
+            {
+                body = part.Body.Data;
+            }
+        }
+        else if (msg.Payload.Body?.Data != null)
+        {
+            body = msg.Payload.Body.Data;
+        }
+
+        if (string.IsNullOrEmpty(body)) return "Contenu indisponible";
+
+
+        byte[] data = Convert.FromBase64String(body.Replace('-', '+').Replace('_', '/'));
+        return System.Text.Encoding.UTF8.GetString(data);
+    }
+
 }

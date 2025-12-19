@@ -1,0 +1,90 @@
+﻿@page "/veille"
+@inherits VeilleDashboardBase
+
+<div class="container mt-4">
+    <div class="kokouintech-card p-4 shadow-sm mb-4">
+        <h3 class="fw-bold mb-3"><i class="bi bi-cpu-fill text-orange me-2"></i>Configuration de votre Veille</h3>
+        <p class="text-muted">Dites à Gemini sur quels sujets vous souhaitez vous concentrer aujourd'hui.</p>
+
+        <div class="row g-3">
+            <div class="col-md-8">
+                <input type="text" class="form-control form-control-lg border-orange"
+                       @bind="Config.SujetsInteret"
+                       placeholder="Ex: .NET Fullstack, Offres d'emploi, Voyages..." />
+            </div>
+            <div class="col-md-4">
+                <button class="btn btn-orange btn-lg w-100 shadow-sm"
+                        @onclick="GenererRapport"
+                        disabled="@(IsLoading || string.IsNullOrEmpty(Config.SujetsInteret))">
+                    @if (IsLoading)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                        <span>Analyse IA...</span>
+                    }
+                    else
+                    {
+                        <span>🚀 Générer ma veille</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @if (IsLoading)
+    {
+        <div class="text-center my-5">
+            <div class="progress rounded-pill mb-3" style="height: 10px; max-width: 500px; margin: 0 auto;">
+                <div class="progress-bar bg-orange progress-bar-striped progress-bar-animated" style="width: 100%"></div>
+            </div>
+            <p class="text-muted italic">Gemini lit vos newsletters pour en extraire l'essentiel...</p>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(RapportIA))
+    {
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-header bg-dark text-white p-3">
+                <h5 class="mb-0"><i class="bi bi-journal-text me-2"></i>Rapport de Veille Personnalisé</h5>
+            </div>
+            <div class="card-body bg-light rapport-content">
+                @((MarkupString)RapportIA)
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .border-orange {
+        border: 2px solid #FF6600 !important;
+    }
+
+    .text-orange {
+        color: #FF6600 !important;
+    }
+
+    .btn-orange {
+        background-color: #FF6600;
+        color: white;
+        border: none;
+    }
+
+        .btn-orange:hover {
+            background-color: #e65c00;
+            color: white;
+        }
+
+    .bg-orange {
+        background-color: #FF6600 !important;
+    }
+
+    .rapport-content {
+        line-height: 1.6;
+        font-size: 1.1rem;
+        white-space: pre-wrap;
+    }
+
+    .kokouintech-card {
+        background: white;
+        border-radius: 15px;
+        border-left: 5px solid #FF6600;
+    }
+</style>
